@@ -26,35 +26,45 @@ fn main() {
 
     let mut lo: f64 = 0.0;
     let mut hi: f64 = 4e6;
+    let mut buckets: HashMap<(i64, i64), Vec<usize>> = HashMap::new();
+    let mut ans: Vec<(usize, usize)> = vec![];
+    let neighbors = [
+        (0, 0),
+        (-1, 0),
+        (0, -1),
+        (0, 1),
+        (1, 0),
+        (-1, -1),
+        (-1, 1),
+        (1, -1),
+        (1, 1),
+    ];
 
     while hi - lo >= 1e-8 {
-        let mut buckets: HashMap<(i64, i64), Vec<usize>> = HashMap::new();
-        let mut ans = vec![];
+        buckets.clear();
+        ans.clear();
         let mid = (lo + hi) / 2.0;
         for i in 0..n {
             let x = (points[i].0 as f64 / mid).floor() as i64;
             let y = (points[i].1 as f64 / mid).floor() as i64;
-            for xp in x - 1..=x + 1 {
-                for yp in y - 1..=y + 1 {
-                    if !buckets.contains_key(&(xp, yp)) {
-                        continue;
-                    }
+            for &(dx, dy) in neighbors.iter() {
+                let xp = x + dx;
+                let yp = y + dy;
 
-                    for &j in buckets.get(&(xp, yp)).unwrap() {
-                        if ((points[i].0 - points[j].0) * (points[i].0 - points[j].0)
-                            + (points[i].1 - points[j].1) * (points[i].1 - points[j].1))
-                            as f64
-                            <= mid * mid
-                        {
-                            ans.push((j, i));
-                            if ans.len() >= 2 {
-                                break;
-                            }
+                if !buckets.contains_key(&(xp, yp)) {
+                    continue;
+                }
+
+                for &j in buckets.get(&(xp, yp)).unwrap() {
+                    if ((points[i].0 - points[j].0) * (points[i].0 - points[j].0)
+                        + (points[i].1 - points[j].1) * (points[i].1 - points[j].1))
+                        as f64
+                        <= mid * mid
+                    {
+                        ans.push((j, i));
+                        if ans.len() >= 2 {
+                            break;
                         }
-                    }
-
-                    if ans.len() >= 2 {
-                        break;
                     }
                 }
 
