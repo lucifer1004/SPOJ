@@ -27,7 +27,6 @@ fn main() {
     let mut lo: f64 = 0.0;
     let mut hi: f64 = 4e6;
     let mut buckets: HashMap<(i64, i64), Vec<usize>> = HashMap::new();
-    let mut ans: Vec<(usize, usize)> = vec![];
     let neighbors = [
         (0, 0),
         (-1, 0),
@@ -40,9 +39,11 @@ fn main() {
         (1, 1),
     ];
 
-    while hi - lo >= 1e-8 {
+    let mut closest: (usize, usize) = (0, 0);
+    let mut valid: (usize, usize);
+    while hi - lo >= 2e-7 {
         buckets.clear();
-        ans.clear();
+        valid = (0, 0);
         let mid = (lo + hi) / 2.0;
         for i in 0..n {
             let x = (points[i].0 as f64 / mid).floor() as i64;
@@ -61,43 +62,31 @@ fn main() {
                         as f64
                         <= mid * mid
                     {
-                        ans.push((j, i));
-                        if ans.len() >= 2 {
-                            break;
-                        }
+                        valid = (j, i);
+                        closest = (j, i);
+                        break;
                     }
                 }
 
-                if ans.len() >= 2 {
+                if valid != (0, 0) {
                     break;
                 }
             }
 
-            if ans.len() >= 2 {
+            if valid != (0, 0) {
                 break;
             }
 
             (*buckets.entry((x, y)).or_default()).push(i);
         }
 
-        if ans.len() == 1 {
-            let (i, j) = ans[0];
-            println!(
-                "{} {} {:.6}",
-                i,
-                j,
-                (((points[i].0 - points[j].0) * (points[i].0 - points[j].0)
-                    + (points[i].1 - points[j].1) * (points[i].1 - points[j].1))
-                    as f64)
-                    .sqrt()
-            );
-            std::process::exit(0);
-        }
-
-        if ans.is_empty() {
+        if valid == (0, 0) {
             lo = mid;
         } else {
             hi = mid;
         }
     }
+
+    let (i, j) = closest;
+    println!("{} {} {:.6}", i, j, lo);
 }
